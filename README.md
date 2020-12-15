@@ -1,10 +1,10 @@
 # Fast Ground Segmentation of 3D Point Clouds
-Ground plane fitting algorithm for fast ground removal in 3D Point Clouds. Ground points removal significantly reduces the number of points involved in proceeding computations.
+Ground plane fitting algorithm for fast ground removal in LAS/LAZ Point Clouds. A preprocessing step, where ground points removal significantly reduces the number of points involved in proceeding computations.
 
 ![](./media/original_rgb.png)
 
 ## Pseudocode
-This project is based on the pseudocode of the ground plane fitting algorithm proposed in the work of [Zermas et al.](https://ieeexplore.ieee.org/abstract/document/7989591). The pseudocode is described below.
+This project is based on the pseudocode of the ground plane fitting algorithm proposed in the work of [Zermas et al.](https://ieeexplore.ieee.org/abstract/document/7989591) The pseudocode is described below.
 
 ```python
 P: point cloud

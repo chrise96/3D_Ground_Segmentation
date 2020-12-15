@@ -9,18 +9,17 @@
 #include "ground_plane_fitting.h"
 
 void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path);
+void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path);
 
 int main(void) {
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr notground_points(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr ground_points(new pcl::PointCloud<pcl::PointXYZI>());
 
-    // TODO read laz file (compressed *.las file)
+    // Read the *.las file
+    loadLas(cloud_in, "input.las");
 
-    // Read the las point cloud file
-    loadLas(cloud_in, "filtered_2386_9702.las");
-
-    std::cerr << "Read Cloud Data Points Size: " << cloud_in->points.size() << std::endl;
+    std::cout << "Read Cloud Data Points Size: " << cloud_in->points.size() << std::endl;
 
     std::cout << "Start Ground Plane Fitting algorithm." << std::endl;
 
@@ -32,25 +31,18 @@ int main(void) {
     auto endTime = std::chrono::steady_clock::now();
     auto ellapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-    std::cerr << "GPF segmentation complete in " << ellapsedTime.count() << "ms." << std::endl; 
-    std::cerr << "GPF ground points: " << ground_points->points.size() << std::endl;
-    std::cerr << "GPF non ground points: " << notground_points->points.size() << std::endl;
+    std::cout << "GPF segmentation complete in " << ellapsedTime.count() << "ms." << std::endl; 
+    std::cout << "GPF ground points: " << ground_points->points.size() << std::endl;
+    std::cout << "GPF non ground points: " << notground_points->points.size() << std::endl;
 
     // Save the point clouds
-    pcl::PCDWriter writer;
-    ground_points->width = 1;
-    ground_points->height = ground_points->points.size();
-    writer.write("ground.pcd", *ground_points);
-
-    notground_points->width = 1;
-    notground_points->height = notground_points->points.size();
-    writer.write("notground.pcd", *notground_points);
+    saveLas(notground_points, "notground.las");
+    saveLas(ground_points, "ground.las");
 
     return 0;
 }
 
-void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path)
-{
+void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
     LASreadOpener lasreadopener;
     lasreadopener.set_file_name(path.c_str());
     if (!lasreadopener.active())
@@ -73,5 +65,45 @@ void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path)
     }
     lasreader->close();
     delete lasreader;
-
 }
+
+void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
+    LASwriteOpener laswriteopener;
+    laswriteopener.set_file_name(path.c_str());
+    laswriteopener.set_format(LAS_TOOLS_FORMAT_LAS); // LAS_TOOLS_FORMAT_LAZ
+    if (!laswriteopener.active()) {
+        return;
+    }
+
+    LASheader lasheader;
+    lasheader.point_data_format = 1;
+    lasheader.point_data_record_length = 35;
+    lasheader.x_scale_factor = 0.0001;
+    lasheader.y_scale_factor = 0.0001;
+    lasheader.z_scale_factor = 0.0001;
+
+    // Init point
+    LASpoint laspoint;
+    laspoint.init(&lasheader, lasheader.point_data_format, lasheader.point_data_record_length, &lasheader);
+
+    LASwriter* laswriter = laswriteopener.open(&lasheader);
+    if (laswriter == 0) {
+        std::cerr << "Could not open laswriter" << std::endl;
+        return;
+    }
+
+    for (auto it = cloud->begin(); it != cloud->end(); ++it) {
+        laspoint.set_x(it->x);
+        laspoint.set_y(it->y);
+        laspoint.set_z(it->z);
+        laspoint.set_intensity(it->intensity);
+        laswriter->write_point(&laspoint);
+        laswriter->update_inventory(&laspoint);
+    }
+
+    // Update the header
+    laswriter->update_header(&lasheader, TRUE);
+    laswriter->close();
+    delete laswriter;
+}
+
