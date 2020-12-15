@@ -26,17 +26,17 @@ mainLoop(P):
     return P_ground, P_notground
 
 extractInitialSeeds(P):
-	P_sorted = sortOnHeight(P)
-	LPR_height = Average(P_sorted(1 : num_lpr_));
-	clear(P_seeds)
-	for i in 1 : P_sorted.size:
-		if P_sorted[i].z < LPR_height + th_seeds_:
-			add p_sorted[i] to P_seeds
-	return P_seeds
+    P_sorted = sortOnHeight(P)
+    LPR_height = Average(P_sorted(1 : num_lpr_));
+    clear(P_seeds)
+    for i in 1 : P_sorted.size:
+        if P_sorted[i].z < LPR_height + th_seeds_:
+            add p_sorted[i] to P_seeds
+    return P_seeds
 ```
 
 ## Prerequisites
-Install LAStools with the following:
+Install [LAStools](http://lastools.org/):
    ```
    wget  http://lastools.github.io/download/LAStools.zip
    unzip LAStools.zip
@@ -45,7 +45,7 @@ Install LAStools with the following:
    sudo make install
    ```
 
-Install PCL on Linux with the following:
+Install [PCL](https://github.com/PointCloudLibrary/pcl):
    ```
    sudo apt install libpcl-dev
    ```
