@@ -36,7 +36,8 @@ extractInitialSeeds(P):
 ```
 
 ## Prerequisites
-Install [LAStools](http://lastools.org/):
+- Install [LAStools](http://lastools.org/):
+
    ```
    wget  http://lastools.github.io/download/LAStools.zip
    unzip LAStools.zip
@@ -45,7 +46,8 @@ Install [LAStools](http://lastools.org/):
    sudo make install
    ```
 
-Install [PCL](https://github.com/PointCloudLibrary/pcl):
+- Install [PCL](https://github.com/PointCloudLibrary/pcl):
+
    ```
    sudo apt install libpcl-dev
    ```
