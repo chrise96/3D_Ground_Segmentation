@@ -36,7 +36,19 @@ extractInitialSeeds(P):
 ```
 
 ## Prerequisites
-TODO
+Install LAStools with the following:
+   ```
+   wget  http://lastools.github.io/download/LAStools.zip
+   unzip LAStools.zip
+   cd LAStools; mkdir build; cd build
+   cmake ..
+   sudo make install
+   ```
+
+Install PCL on Linux with the following:
+   ```
+   sudo apt install libpcl-dev
+   ```
 
 ## Installation instructions
 - Download the project.
