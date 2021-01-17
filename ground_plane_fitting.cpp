@@ -17,7 +17,7 @@ GroundPlaneFit::~GroundPlaneFit() {}
  * @brief Use the set of seed points to estimate the initial plane model 
  * of the ground surface.
  */
-model_t GroundPlaneFit::estimatePlane(const pcl::PointCloud<pcl::PointXYZI>& seed_points) {
+model_t GroundPlaneFit::estimatePlane(const pcl::PointCloud<pcl::PointXYZRGB>& seed_points) {
     Eigen::Matrix3f cov_matrix(3, 3);
     Eigen::Vector4f points_mean;
     model_t model;
@@ -43,13 +43,13 @@ model_t GroundPlaneFit::estimatePlane(const pcl::PointCloud<pcl::PointXYZI>& see
 /*
  * @brief Extract a set of seed points with low height values.
  */
-void GroundPlaneFit::extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in,
-        const pcl::PointCloud<pcl::PointXYZI>::Ptr seed_points) {   
+void GroundPlaneFit::extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in,
+        const pcl::PointCloud<pcl::PointXYZRGB>::Ptr seed_points) {   
     
     // Sort on z-axis values (sortOnHeight)
-    std::vector<pcl::PointXYZI> cloud_sorted((*cloud_in).points.begin(), (*cloud_in).points.end());
+    std::vector<pcl::PointXYZRGB> cloud_sorted((*cloud_in).points.begin(), (*cloud_in).points.end());
     sort(cloud_sorted.begin(), cloud_sorted.end(), 
-        [](pcl::PointXYZI p1, pcl::PointXYZI p2) {
+        [](pcl::PointXYZRGB p1, pcl::PointXYZRGB p2) {
             // Similar to defining a bool function
             return p1.z < p2.z;
         }
@@ -57,7 +57,7 @@ void GroundPlaneFit::extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZI>::
 
     // Negative outlier error point removal.
     // As there might be some error mirror reflection under the ground
-    std::vector<pcl::PointXYZI>::iterator it = cloud_sorted.begin();
+    std::vector<pcl::PointXYZRGB>::iterator it = cloud_sorted.begin();
     for(size_t i = 0; i < cloud_sorted.size(); ++i) {
         // We define the outlier threshold -1.5 times the height of the LiDAR sensor
         if (cloud_sorted[i].z < -1.5 * sensor_height_) {
@@ -92,11 +92,11 @@ void GroundPlaneFit::extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZI>::
  *   Fast Segmentation of 3D Point Clouds: A Paradigm on LiDAR Data for 
  *   Autonomous Vehicle Applications (ICRA, 2017) 
  */
-void GroundPlaneFit::mainLoop(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in, 
-	    pcl::PointCloud<pcl::PointXYZI>::Ptr notground_points,
-        pcl::PointCloud<pcl::PointXYZI>::Ptr ground_points) {
+void GroundPlaneFit::mainLoop(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in, 
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr notground_points,
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr ground_points) {
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr seed_points(new pcl::PointCloud<pcl::PointXYZI>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr seed_points(new pcl::PointCloud<pcl::PointXYZRGB>());
 
     /// 1. Extract initial ground seeds
     extractInitialSeeds(cloud_in, seed_points);
@@ -129,19 +129,24 @@ void GroundPlaneFit::mainLoop(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_i
         for (int k = 0; k < result.rows(); ++k) {
             if (result[k] < th_dist_d_) {
                 // TODO think about a more optimized code for this part
-                pcl::PointXYZI point;
+                pcl::PointXYZRGB point;
                 point.x = cloud_in->points[k].x;
                 point.y = cloud_in->points[k].y;
                 point.z = cloud_in->points[k].z;
-                point.intensity = cloud_in->points[k].intensity;
+                point.r = cloud_in->points[k].r;
+                point.g = cloud_in->points[k].g;
+                point.b = cloud_in->points[k].b;
                 ground_points->points.push_back(point);
             }
             else {
-                pcl::PointXYZI point;
+                pcl::PointXYZRGB point;
                 point.x = cloud_in->points[k].x;
                 point.y = cloud_in->points[k].y;
                 point.z = cloud_in->points[k].z;
-                point.intensity = cloud_in->points[k].intensity;
+                point.r = cloud_in->points[k].r;
+                point.g = cloud_in->points[k].g;
+                point.b = cloud_in->points[k].b;
+
                 notground_points->points.push_back(point);
             }
         }

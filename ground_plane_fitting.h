@@ -18,12 +18,12 @@ public:
     GroundPlaneFit();
     ~GroundPlaneFit();
 
-    void mainLoop(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in, pcl::PointCloud<pcl::PointXYZI>::Ptr notground_points,
-        pcl::PointCloud<pcl::PointXYZI>::Ptr ground_points);
+    void mainLoop(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in, pcl::PointCloud<pcl::PointXYZRGB>::Ptr notground_points,
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr ground_points);
 
 private:
-    model_t estimatePlane(const pcl::PointCloud<pcl::PointXYZI>& seed_points);
-    void extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in, const pcl::PointCloud<pcl::PointXYZI>::Ptr seed_points);
+    model_t estimatePlane(const pcl::PointCloud<pcl::PointXYZRGB>& seed_points);
+    void extractInitialSeeds(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr seed_points);
 
     int num_seg_;
     int num_iter_;

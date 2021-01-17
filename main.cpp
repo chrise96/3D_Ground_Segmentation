@@ -8,13 +8,13 @@
 #include <laswriter.hpp>
 #include "ground_plane_fitting.h"
 
-void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path);
-void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path);
+void loadLas(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::string path);
+void saveLas(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::string path);
 
 int main(void) {
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZI>());
-    pcl::PointCloud<pcl::PointXYZI>::Ptr notground_points(new pcl::PointCloud<pcl::PointXYZI>());
-    pcl::PointCloud<pcl::PointXYZI>::Ptr ground_points(new pcl::PointCloud<pcl::PointXYZI>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr notground_points(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr ground_points(new pcl::PointCloud<pcl::PointXYZRGB>());
 
     /*
      * Read *.las or *.laz file
@@ -49,7 +49,7 @@ int main(void) {
     return 0;
 }
 
-void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
+void loadLas(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::string path) {
     LASreadOpener lasreadopener;
     lasreadopener.set_file_name(path.c_str());
     if (!lasreadopener.active()) {
@@ -59,13 +59,15 @@ void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
     LASreader* lasreader = lasreadopener.open();
     cloud->resize(lasreader->header.number_of_point_records);
     size_t step = 0;
-    pcl::PointXYZI *pt;
+    pcl::PointXYZRGB *pt;
     while (lasreader->read_point()) {
         pt = &cloud->at(step);
         pt->x = lasreader->point.get_x();
         pt->y = lasreader->point.get_y();
         pt->z = lasreader->point.get_z();
-        pt->intensity = lasreader->point.get_intensity();
+        pt->r = lasreader->point.get_R();
+        pt->g = lasreader->point.get_G();
+        pt->b = lasreader->point.get_B();
 
         ++step;
     }
@@ -73,7 +75,7 @@ void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
     delete lasreader;
 }
 
-void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
+void saveLas(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, std::string path) {
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(path.c_str());
     laswriteopener.set_format(LAS_TOOLS_FORMAT_LAS); // NOTE: We can also use "LAS_TOOLS_FORMAT_LAZ"
@@ -102,7 +104,9 @@ void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
         laspoint.set_x(it->x);
         laspoint.set_y(it->y);
         laspoint.set_z(it->z);
-        laspoint.set_intensity(it->intensity);
+        laspoint.set_R(it->r);
+        laspoint.set_G(it->g);
+        laspoint.set_B(it->b);
         laswriter->write_point(&laspoint);
         laswriter->update_inventory(&laspoint);
     }
