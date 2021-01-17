@@ -16,8 +16,15 @@ int main(void) {
     pcl::PointCloud<pcl::PointXYZI>::Ptr notground_points(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr ground_points(new pcl::PointCloud<pcl::PointXYZI>());
 
-    // Read the *.las file
-    loadLas(cloud_in, "input.las");
+    /*
+     * Read *.las or *.laz file
+     *
+     * LASlib includes the LASzip compression library that provides lossless compression
+     * for LAS data. This allows you to read or write *.laz (LASzip compressed *.las
+     * files) directly like you would an uncompressed .las file using the same LASreader
+     * and LASwriter classes.
+     */
+    loadLas(cloud_in, "input.laz");
 
     std::cout << "Read Cloud Data Points Size: " << cloud_in->points.size() << std::endl;
 
@@ -26,7 +33,7 @@ int main(void) {
     auto startTime = std::chrono::steady_clock::now();
 
     GroundPlaneFit fs;
-    fs.run(cloud_in, notground_points, ground_points);
+    fs.mainLoop(cloud_in, notground_points, ground_points);
 
     auto endTime = std::chrono::steady_clock::now();
     auto ellapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -45,16 +52,15 @@ int main(void) {
 void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
     LASreadOpener lasreadopener;
     lasreadopener.set_file_name(path.c_str());
-    if (!lasreadopener.active())
-    {
+    if (!lasreadopener.active()) {
         return;
     }
+
     LASreader* lasreader = lasreadopener.open();
     cloud->resize(lasreader->header.number_of_point_records);
     size_t step = 0;
     pcl::PointXYZI *pt;
-    while (lasreader->read_point())
-    {
+    while (lasreader->read_point()) {
         pt = &cloud->at(step);
         pt->x = lasreader->point.get_x();
         pt->y = lasreader->point.get_y();
@@ -70,7 +76,7 @@ void loadLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
 void saveLas(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::string path) {
     LASwriteOpener laswriteopener;
     laswriteopener.set_file_name(path.c_str());
-    laswriteopener.set_format(LAS_TOOLS_FORMAT_LAS); // LAS_TOOLS_FORMAT_LAZ
+    laswriteopener.set_format(LAS_TOOLS_FORMAT_LAS); // NOTE: We can also use "LAS_TOOLS_FORMAT_LAZ"
     if (!laswriteopener.active()) {
         return;
     }
