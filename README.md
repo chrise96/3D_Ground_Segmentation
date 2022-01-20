@@ -41,7 +41,8 @@ extractInitialSeeds(P):
    ```
    wget  http://lastools.github.io/download/LAStools.zip
    unzip LAStools.zip
-   cd LAStools; mkdir build; cd build
+   cd LAStools; mv LASlib/src/LASlib-config.cmake LASlib/src/laslib-config.cmake
+   mkdir build; cd build
    cmake ..
    sudo make install
    ```
